@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
 	"fmt"
 	"github.com/MobasirSarkar/go-vote-app/internal/server"
+	"log"
 )
 
 func main() {

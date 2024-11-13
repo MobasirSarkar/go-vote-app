@@ -9,15 +9,17 @@ import (
 	"os"
 	"time"
 
+	"github.com/MobasirSarkar/go-vote-app/internal/models"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 type Service interface {
-
+	// Add User Data to Users table
+	AddUsers(u *models.User) error
 	// Ping the database
 	// It returns an error if the connection is not made
-	Ping() map[string]string
+	Ping() error
 
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
@@ -56,20 +58,11 @@ func New() Service {
 	return dbInstance
 }
 
-func (s *service) Ping() map[string]string {
-	resp := make(map[string]string)
+func (s *service) Ping() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := s.db.PingContext(ctx)
-	resp["message"] = err.Error()
-	if err != nil {
-		log.Panicf("Error while ping data: %s", err)
-	}
-
-	resp["message"] = "Database Connected Successfully"
-
-	return resp
+	return s.db.PingContext(ctx)
 }
 
 func (s *service) Close() error {
