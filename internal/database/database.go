@@ -15,6 +15,9 @@ import (
 )
 
 type Service interface {
+	// Finds User by Email
+	FindUserByEmail(email string) (*models.User, error)
+
 	// Add User Data to Users table
 	AddUsers(u *models.User) error
 	// Ping the database

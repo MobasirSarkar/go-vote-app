@@ -9,9 +9,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /", s.HandlerHome)
-	router.HandleFunc("GET /ping", s.HandlerPing)
+	router.Handle("GET /ping", s.HandleAuth(http.HandlerFunc(s.HandlerPing)))
 
 	router.HandleFunc("POST /create-user", s.HandlerAddUser)
+	router.HandleFunc("POST /sign-in", s.LoginHandler)
 
 	return router
 }
@@ -34,10 +35,10 @@ func (s *Server) HandlerPing(w http.ResponseWriter, r *http.Request) {
 
 	err := s.db.Ping()
 	if err != nil {
-		resp["message"] = "Db error"
+		resp["message"] = `Db error`
+	} else {
+		resp["message"] = "Database Connected"
 	}
-
-	resp["message"] = "Database Connected"
 
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)

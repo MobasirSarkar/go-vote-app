@@ -11,6 +11,7 @@ import (
 
 func (s *Server) HandlerAddUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
+	var details utils.DuplicateEntryError
 
 	// Decodes the reponse in user
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -30,9 +31,15 @@ func (s *Server) HandlerAddUser(w http.ResponseWriter, r *http.Request) {
 	// add reponse to the table users
 	err := s.db.AddUsers(&user)
 	if err != nil {
-		log.Printf("Error while creating users: %s", err)
-		http.Error(w, "Unable to Add User", http.StatusBadRequest)
-		return
+		if utils.IsDuplicateEntryError(err, &details) {
+			log.Printf("Unique Key Violation: %s", err)
+			http.Error(w, details.Error(), http.StatusConflict)
+			return
+		} else {
+			log.Printf("Server Error %s", err)
+			http.Error(w, "Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// Status Ok if succeed
